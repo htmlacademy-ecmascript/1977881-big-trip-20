@@ -30,23 +30,23 @@ const TYPE = [
   'Flight'
 ];
 
+
 function tripPointStub () {
-  const city = getRandomValue(CITIES);
 
   return {
-    'name': getRandomValue(city),
+    'name': getRandomValue(CITIES),
     'basePrice': getRandomInteger(Price.MIN, (Price.MAX / 10)),
     'destination': {
       'description':getRandomValue(DESCRIPTION),
-      'name': getRandomValue(city),
+      'name': getRandomValue(CITIES),
       'pictures': [
         {
           'src': 'https://20.objects.pages.academy/static/destinations/4.jpg',
-          'description': `${city} for those who value comfort and coziness`
+          'description': `${CITIES} for those who value comfort and coziness`
         },
         {
           'src': 'https://20.objects.pages.academy/static/destinations/12.jpg',
-          'description': `${city} a true asian pearl`
+          'description': `${CITIES} a true asian pearl`
         }
       ]
     },
