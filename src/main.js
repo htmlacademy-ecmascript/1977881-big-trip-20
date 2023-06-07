@@ -1,8 +1,8 @@
-import {render, RenderPosition} from './render';
 import TripPointsPresenter from './presenter/trip-points-presenter';
 import TripFiltersView from './view/trip-filters-view';
 import TripPointModel from './model/trip-point-model';
 import TripInfoView from './view/trip-info-view';
+import {render, RenderPosition} from './framework/render';
 
 const pageHeader = document.querySelector('.page-header');
 const tripMain = pageHeader.querySelector('.trip-main');

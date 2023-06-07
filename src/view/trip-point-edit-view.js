@@ -1,5 +1,5 @@
-import {createElement} from '../render.js';
 import {capitalize, toFullDateTime} from '../utils';
+import AbstractView from '../framework/view/abstract-view';
 
 const BLANK_POINT =
   {
@@ -157,24 +157,35 @@ function createTripPointEditTemplate(tripPoint) {
   );
 }
 
-export default class TripPointEditView {
-  constructor({tripPoint = BLANK_POINT}) {
-    this.tripPoint = tripPoint;
+export default class TripPointEditView extends AbstractView {
+  #tripPoint = null;
+  #handleRollupClick = null;
+  #handleFormSubmit = null;
+
+  constructor({tripPoint = BLANK_POINT, onRollupClick, onFormSubmit}) {
+    super();
+    this.#tripPoint = tripPoint;
+    this.#handleRollupClick = onRollupClick;
+    this.#handleFormSubmit = onFormSubmit;
+
+    this.element.querySelector('.event__rollup-btn')
+      .addEventListener('click', this.#rollupClickHandler);
+
+    this.element.querySelector('form')
+      .addEventListener('submit', this.#formSubmitHandler);
   }
 
-  getTemplate() {
-    return createTripPointEditTemplate(this.tripPoint);
+  get template() {
+    return createTripPointEditTemplate(this.#tripPoint);
   }
 
-  getElement() {
-    if (!this.element) {
-      this.element = createElement(this.getTemplate());
-    }
+  #rollupClickHandler = (evt) => {
+    evt.preventDefault();
+    this.#handleRollupClick();
+  };
 
-    return this.element;
-  }
-
-  removeElement() {
-    this.element = null;
-  }
+  #formSubmitHandler = (evt) => {
+    evt.preventDefault();
+    this.#handleFormSubmit();
+  };
 }

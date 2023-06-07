@@ -1,5 +1,5 @@
-import {createElement} from '../render.js';
 import {capitalize, duration, toDay, toTime} from '../utils';
+import AbstractView from '../framework/view/abstract-view';
 
 function createTripPointTemplate(tripPoint) {
   const day = toDay(tripPoint.dateFrom);
@@ -42,25 +42,26 @@ function createTripPointTemplate(tripPoint) {
   );
 }
 
-export default class TripPointView {
-  constructor({tripPoint}) {
-    this.tripPoint = tripPoint;
+export default class TripPointView extends AbstractView {
+  #tripPoint = null;
+  #handleRollupClick = null;
+
+  constructor({tripPoint, onRollupClick}) {
+    super();
+    this.#tripPoint = tripPoint;
+    this.#handleRollupClick = onRollupClick;
+
+    this.element.querySelector('.event__rollup-btn')
+      .addEventListener('click', this.#editCLickHandler);
   }
 
-  getTemplate() {
-    return createTripPointTemplate(this.tripPoint);
+  get template() {
+    return createTripPointTemplate(this.#tripPoint);
   }
 
-  getElement() {
-    if (!this.element) {
-      this.element = createElement(this.getTemplate());
-    }
-
-    return this.element;
-  }
-
-  removeElement() {
-    this.element = null;
-  }
+  #editCLickHandler = (evt) => {
+    evt.preventDefault();
+    this.#handleRollupClick();
+  };
 }
 
