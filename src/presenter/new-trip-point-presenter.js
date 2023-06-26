@@ -1,6 +1,6 @@
 import TripPointEditView from '../view/trip-point-edit-view';
 import {remove, render, RenderPosition} from '../framework/render';
-import {UpdateType, UserAction} from '../constants';
+import {UpdateType, UserAction} from '../utils/constants';
 
 export default class NewTripPointPresenter {
   #idToDestinationMap;
@@ -80,8 +80,6 @@ export default class NewTripPointPresenter {
       UpdateType.MINOR,
       tripPoint,
     );
-
-    this.destroy();
   };
 
   #handleDeleteClick = () => {
