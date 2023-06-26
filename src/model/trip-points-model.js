@@ -1,5 +1,5 @@
 import Observable from '../framework/observable';
-import {UpdateType} from '../constants';
+import {UpdateType} from '../utils/constants';
 
 export default class TripPointsModel extends Observable {
   #tripPointsApiService;
@@ -16,9 +16,10 @@ export default class TripPointsModel extends Observable {
       this.#tripPoints = tripPoints.map(this.#adaptToClient);
     } catch (e) {
       this.#tripPoints = [];
+      this._notify(UpdateType.INIT, {isError: true});
     }
 
-    this._notify(UpdateType.INIT);
+    this._notify(UpdateType.INIT, {isError: false});
   }
 
   get tripPoints() {

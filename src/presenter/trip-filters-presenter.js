@@ -1,4 +1,4 @@
-import {FilterType, UpdateType} from '../constants';
+import {FilterType, UpdateType} from '../utils/constants';
 import TripFiltersView from '../view/trip-filters-view';
 import {remove, render, replace} from '../framework/render';
 
