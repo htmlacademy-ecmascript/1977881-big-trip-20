@@ -1,4 +1,4 @@
-import {FilterType} from '../constants';
+import {FilterType} from './constants';
 import {isCurrentDate, isInFuture, isInThePast} from './utils';
 
 const filter = {

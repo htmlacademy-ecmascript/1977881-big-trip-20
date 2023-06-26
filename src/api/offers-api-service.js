@@ -6,3 +6,4 @@ export default class OffersApiService extends ApiService {
       .then(ApiService.parseResponse);
   }
 }
+

@@ -1,5 +1,6 @@
-import {capitalize, toFullDateTime} from '../utils/utils';
-import {TRIP_POINT_TYPES} from '../constants';
+import he from 'he';
+import {capitalize, convertToFullDateTime} from '../utils/utils';
+import {TRIP_POINT_TYPES} from '../utils/constants';
 import AbstractStatefulView from '../framework/view/abstract-stateful-view';
 import flatpickr from 'flatpickr';
 
@@ -81,10 +82,10 @@ function createDestinationTemplate(destination) {
   );
 }
 
-function createOfferTemplate(offer, isDisabled) {
+function createOfferTemplate(offer, isDisabled, isChecked) {
   return (
     `<div class="event__offer-selector">
-      <input class="event__offer-checkbox  visually-hidden" id="${offer.id}" type="checkbox" name="event-offer-luggage" checked ${isDisabled ? 'disabled' : ''}>
+      <input class="event__offer-checkbox  visually-hidden" id="${offer.id}" type="checkbox" name="event-offer-${offer.id}" ${isChecked ? 'checked' : ''} ${isDisabled ? 'disabled' : ''}>
       <label class="event__offer-label" for="${offer.id}">
         <span class="event__offer-title">${offer.title}</span>
         &plus;&euro;&nbsp;
@@ -94,7 +95,7 @@ function createOfferTemplate(offer, isDisabled) {
   );
 }
 
-function createOffersTemplate(offers, isDisabled) {
+function createOffersTemplate(offers, isDisabled, tripPoint) {
   if (!offers || offers.length === 0) {
     return '';
   }
@@ -105,7 +106,8 @@ function createOffersTemplate(offers, isDisabled) {
         <div class="event__available-offers">`;
 
   for (const offer of offers) {
-    result += createOfferTemplate(offer, isDisabled);
+    const isChecked = tripPoint.offers.includes(offer.id);
+    result += createOfferTemplate(offer, isDisabled, isChecked);
   }
 
   result += '</div></section>';
@@ -117,11 +119,18 @@ function createTripPointEditTemplate(tripPoint, idToDestinationMap, typeToOffers
   const isSaving = tripPoint.isSaving;
   const isDeleting = tripPoint.isDeleting;
 
-  const dateFrom = toFullDateTime(tripPoint.dateFrom);
-  const dateTo = toFullDateTime(tripPoint.dateTo);
+  const isAddingNewTripPoint = (!tripPoint.dateFrom && !tripPoint.dateTo);
+
+  let resetButtonLabel = isDeleting ? 'Deleting...' : 'Delete';
+  if (isAddingNewTripPoint) {
+    resetButtonLabel = 'Cancel';
+  }
+
+  const dateFrom = convertToFullDateTime(tripPoint.dateFrom);
+  const dateTo = convertToFullDateTime(tripPoint.dateTo);
   const destination = idToDestinationMap.get(tripPoint.destination);
   const destinationTemplate = createDestinationTemplate(destination);
-  const offersTemplate = createOffersTemplate(typeToOffersMap.get(tripPoint.type), isDisabled);
+  const offersTemplate = createOffersTemplate(typeToOffersMap.get(tripPoint.type), isDisabled, tripPoint);
   const eventTypesTemplate = createEventTypesTemplate();
   const destinationsTemplate = createDestinationsTemplate(idToDestinationMap);
 
@@ -148,7 +157,7 @@ function createTripPointEditTemplate(tripPoint, idToDestinationMap, typeToOffers
             <label class="event__label  event__type-output" for="event-destination-1">
               ${capitalize(tripPoint.type)}
             </label>
-            <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${destination ? destination.name : ''}" list="destination-list-1" ${isDisabled ? 'disabled' : ''}>
+            <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${he.encode(destination ? destination.name : '')}" list="destination-list-1" ${isDisabled ? 'disabled' : ''}>
             <datalist id="destination-list-1">
               ${destinationsTemplate}
             </datalist>
@@ -171,7 +180,7 @@ function createTripPointEditTemplate(tripPoint, idToDestinationMap, typeToOffers
           </div>
 
           <button class="event__save-btn  btn  btn--blue" type="submit" ${isDisabled ? 'disabled' : ''}>${isSaving ? 'Saving...' : 'Save'}</button>
-          <button class="event__reset-btn" type="reset" ${isDisabled ? 'disabled' : ''}>${isDeleting ? 'Deleting...' : 'Delete'}</button>
+          <button class="event__reset-btn" type="reset" ${isDisabled ? 'disabled' : ''}>${resetButtonLabel}</button>
           <button class="event__rollup-btn" type="button" ${isDisabled ? 'disabled' : ''}>
             <span class="visually-hidden">Open event</span>
           </button>
@@ -260,6 +269,12 @@ export default class TripPointEditView extends AbstractStatefulView {
     }
   }
 
+  reset(tripPoint) {
+    this.updateElement(
+      TripPointEditView.parseTripPointToState(tripPoint),
+    );
+  }
+
   #setDateFromDatepicker() {
     this.#dateFromDatepicker = flatpickr(
       this.element.querySelector('input[name=event-start-time]'),
@@ -317,7 +332,10 @@ export default class TripPointEditView extends AbstractStatefulView {
     const eventTypes = this.element.querySelectorAll('input[name=event-type]');
     for (const eventType of eventTypes) {
       eventType.addEventListener('change', () => {
-        this.updateElement({type: eventType.value});
+        this.updateElement({
+          offers: [],
+          type: eventType.value
+        });
       });
     }
 
@@ -330,9 +348,28 @@ export default class TripPointEditView extends AbstractStatefulView {
       }
     });
 
+    this.element.querySelector('.event__available-offers')
+      ?.addEventListener('change', this.#chooseOffersHandler);
+
     this.#setDateFromDatepicker();
     this.#setDateToDatepicker();
   }
+
+  #chooseOffersHandler = (evt) => {
+    if (evt.target.tagName !== 'INPUT') {
+      return;
+    }
+
+    evt.preventDefault();
+
+    const chosenOffers = Array
+      .from(this.element.querySelectorAll('.event__offer-checkbox:checked'))
+      .map((element) => element.id);
+
+    this._setState({
+      offers: chosenOffers
+    });
+  };
 
   #priceChangeHandler = (evt) => {
     evt.preventDefault();

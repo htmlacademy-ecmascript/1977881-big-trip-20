@@ -1,7 +1,7 @@
 import TripPointView from '../view/trip-point-view';
 import TripPointEditView from '../view/trip-point-edit-view';
 import {remove, render, replace} from '../framework/render';
-import {UpdateType, UserAction} from '../constants';
+import {UpdateType, UserAction} from '../utils/constants';
 import {areDatesEqual} from '../utils/utils';
 
 const Mode = {
@@ -118,12 +118,14 @@ export default class TripPointPresenter {
   };
 
   #handleRollupClick = () => {
+    this.#tripPointEditComponent.reset(this.#tripPoint);
     this.#replaceFormToPoint();
   };
 
   #escKeyDownHandler = (evt) => {
     if (evt.key === 'Escape' || evt.key === 'Esc') {
       evt.preventDefault();
+      this.#tripPointEditComponent.reset(this.#tripPoint);
       this.#replaceFormToPoint();
     }
   };

@@ -1,13 +1,17 @@
-import {capitalize, duration, toDay, toTime} from '../utils/utils';
+import {calculateDuration, capitalize, convertToDay, convertToTime} from '../utils/utils';
 import AbstractView from '../framework/view/abstract-view';
 
-function createOffersTemplate(offers) {
+function createOffersTemplate(offers, tripPoint) {
   let result = '';
   if (!offers) {
     return result;
   }
 
   for (const offer of offers) {
+    if (!tripPoint.offers.includes(offer.id)) {
+      continue;
+    }
+
     result += (
       `<li class="event__offer">
         <span class="event__offer-title">${offer.title}</span>
@@ -21,10 +25,10 @@ function createOffersTemplate(offers) {
 }
 
 function createTripPointTemplate(tripPoint, idToDestinationMap, typeToOffersMap) {
-  const day = toDay(tripPoint.dateFrom);
-  const startTime = toTime(tripPoint.dateFrom);
-  const endTime = toTime(tripPoint.dateTo);
-  const durationTime = duration(tripPoint.dateFrom, tripPoint.dateTo);
+  const day = convertToDay(tripPoint.dateFrom);
+  const startTime = convertToTime(tripPoint.dateFrom);
+  const endTime = convertToTime(tripPoint.dateTo);
+  const durationTime = calculateDuration(tripPoint.dateFrom, tripPoint.dateTo);
   const eventTitle = `${capitalize(tripPoint.type)} ${idToDestinationMap.get(tripPoint.destination).name}`;
   const isFavoriteClassName = tripPoint.isFavorite ? 'event__favorite-btn--active' : '';
   const offers = typeToOffersMap.get(tripPoint.type);
@@ -50,7 +54,7 @@ function createTripPointTemplate(tripPoint, idToDestinationMap, typeToOffersMap)
         </p>
         <h4 class="visually-hidden">Offers:</h4>
         <ul class="event__selected-offers">
-          ${createOffersTemplate(offers)}
+          ${createOffersTemplate(offers, tripPoint)}
         </ul>
         <button class="event__favorite-btn  ${isFavoriteClassName}" type="button">
           <span class="visually-hidden">Add to favorite</span>
